@@ -269,10 +269,14 @@ uint64_t KeyValueBlockchain::onNewBFTSequenceNumber(const categorization::Update
     old_rock_sn = snap_shot_->GetSequenceNumber();
     new_snap_shot.releasePreviousSnapshot(snap_shot_);
   }
+  if (block_chain_.needCompaction()) {
+    block_chain_.compaction();
+  }
 
   native_client_->put(v4blockchain::detail::MISC_CF,
                       kvbc::keyTypes::v4_snapshot_sequence,
                       new_snap_shot.getStorableSeqNumAndPreventRelease(bft_stable_sn));
+
   snap_shot_ = new_snap_shot.get();
   LOG_DEBUG(V4_BLOCK_LOG,
             "New sequence number identified "

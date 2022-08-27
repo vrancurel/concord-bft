@@ -52,6 +52,8 @@ class Blockchain {
   // else delete up to last reachable block and not including last reachable block.
   // Do nothing of last reachable block is same as the genesis block.
   BlockId deleteBlocksUntil(BlockId until);
+  bool needCompaction() { return need_compaction_; }
+  void compaction();
   void deleteGenesisBlock();
   void deleteLastReachableBlock(storage::rocksdb::NativeWriteBatch&);
   ///////////////////State Transfer/////////////////////////////////
@@ -116,6 +118,7 @@ class Blockchain {
  private:
   std::atomic<BlockId> last_reachable_block_id_{INVALID_BLOCK_ID};
   std::atomic<BlockId> genesis_block_id_{INVALID_BLOCK_ID};
+  bool need_compaction_{false};
   std::shared_ptr<concord::storage::rocksdb::NativeClient> native_client_;
   util::ThreadPool thread_pool_{1};
   std::optional<std::future<BlockDigest>> future_digest_;

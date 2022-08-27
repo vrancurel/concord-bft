@@ -99,8 +99,17 @@ BlockId Blockchain::deleteBlocksUntil(BlockId until) {
   auto blocks_deleted = (last_deleted_block - genesis_block_id_) + 1;
   setGenesisBlockId(last_deleted_block + 1);
 
+  need_compaction_ = true;
   LOG_INFO(V4_BLOCK_LOG, "Deleted " << blocks_deleted << " blocks, new genesis is " << genesis_block_id_);
   return last_deleted_block;
+}
+
+// Compacts between 1 and genesis_block_id - 1 in order to physically reclaim space
+// from the last delRange()
+void Blockchain::compaction() {
+  native_client_->compactRange(
+      v4blockchain::detail::BLOCKS_CF, generateKey(1), generateKey(genesis_block_id_ - 1));
+  need_compaction_ = false;
 }
 
 void Blockchain::deleteGenesisBlock() {
